@@ -4,6 +4,8 @@ Serveur MCP pour la découverte et l'accès aux données d'un catalogue [GeoNetw
 
 Permet à un assistant IA de rechercher des fiches de métadonnées, consulter leurs détails et découvrir les services (WMS, WFS, téléchargements...) référencés dans le catalogue.
 
+Les réponses de l'API GeoNetwork sont converties en `CatalogRecord` (modèle pivot de [geonetwork-ui](https://github.com/geonetwork/geonetwork-ui)) via la librairie `@geonetwork-ui/metadata-converter`.
+
 ## Installation
 
 ```bash
@@ -58,10 +60,13 @@ Consulter les métadonnées complètes d'une fiche : titre, résumé, mots-clés
 
 ### `get_record_resources`
 
-Lister les ressources associées à une fiche, groupées par catégorie :
-- **Services OGC / API** — WMS, WFS, WMTS, WCS, ESRI...
+Lister les ressources associées à une fiche, groupées par usage (classification via `getUsagesForLink` de geonetwork-ui) :
+- **Services / API** — WFS, OGC Features, ESRI REST...
+- **Services cartographiques** — WMS, WMTS, TMS
+- **Données géographiques** — GeoJSON, Shapefile, GeoPackage...
+- **Données tabulaires** — CSV, Excel, JSON
 - **Téléchargements** — fichiers téléchargeables
-- **Liens web** — pages d'information, documentation
+- **Autres liens** — pages d'information, documentation
 
 | Paramètre | Type   | Description              |
 |-----------|--------|--------------------------|
@@ -73,15 +78,15 @@ Lister les ressources associées à une fiche, groupées par catégorie :
 src/
 ├── index.ts                     # Entry point (stdio transport)
 ├── server.ts                    # McpServer + enregistrement des tools
-├── types/
-│   └── geonetwork.ts            # Types domaine
 ├── api/
-│   ├── client.ts                # Client HTTP GeoNetwork 4.x
-│   └── search.ts                # Construction des requêtes ElasticSearch
+│   └── client.ts                # GeoNetworkClient (wrapper sur la lib)
 └── tools/
     ├── search-records.ts
     ├── get-record.ts
     └── get-record-resources.ts
+lib/
+└── metadata-converter/          # @geonetwork-ui/metadata-converter
+    └── ...                      # Modèle CatalogRecord, converter GN4, link utilities
 ```
 
 ## Développement

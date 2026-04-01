@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GeoNetworkClient } from "../api/client.js";
-import type { RecordSummary } from "../types/geonetwork.js";
+import type { CatalogRecord } from "@geonetwork-ui/metadata-converter";
 
 export function registerSearchRecordsTool(
   server: McpServer,
@@ -70,7 +70,7 @@ export function registerSearchRecordsTool(
           size: size ?? 20,
         });
 
-        if (result.total === 0) {
+        if (result.count === 0) {
           return {
             content: [
               {
@@ -82,18 +82,20 @@ export function registerSearchRecordsTool(
         }
 
         const lines: string[] = [
-          `# ${result.total} fiche(s) trouvée(s)`,
+          `# ${result.count} fiche(s) trouvée(s)`,
           "",
         ];
 
-        if (result.total > result.records.length) {
+        if (result.count > result.records.length) {
           lines.push(
-            `*Affichage de ${result.records.length} sur ${result.total} résultats.*`,
+            `*Affichage de ${result.records.length} sur ${result.count} résultats.*`,
             ""
           );
         }
 
-        lines.push(result.records.map(formatRecordSummary).join("\n\n---\n\n"));
+        lines.push(
+          result.records.map(formatRecordSummary).join("\n\n---\n\n")
+        );
 
         return {
           content: [{ type: "text" as const, text: lines.join("\n") }],
@@ -113,14 +115,14 @@ export function registerSearchRecordsTool(
   );
 }
 
-function formatRecordSummary(record: RecordSummary): string {
+function formatRecordSummary(record: CatalogRecord): string {
   const lines: string[] = [
-    `**${record.title || "Sans titre"}** (\`${record.uuid}\`)`,
-    `- Type: ${record.type}`,
+    `**${record.title || "Sans titre"}** (\`${record.uniqueIdentifier}\`)`,
+    `- Type: ${record.kind}`,
   ];
 
-  if (record.organization) {
-    lines.push(`- Organisation: ${record.organization}`);
+  if (record.ownerOrganization?.name) {
+    lines.push(`- Organisation: ${record.ownerOrganization.name}`);
   }
 
   if (record.abstract) {
@@ -132,11 +134,23 @@ function formatRecordSummary(record: RecordSummary): string {
   }
 
   if (record.keywords.length > 0) {
-    lines.push(`- Mots-clés: ${record.keywords.slice(0, 8).join(", ")}`);
+    lines.push(
+      `- Mots-clés: ${record.keywords
+        .slice(0, 8)
+        .map((k) => k.label)
+        .join(", ")}`
+    );
   }
 
-  if (record.updateDate) {
-    lines.push(`- Dernière mise à jour: ${record.updateDate.split("T")[0]}`);
+  if (record.recordUpdated) {
+    lines.push(
+      `- Dernière mise à jour: ${record.recordUpdated.toISOString().split("T")[0]}`
+    );
+  }
+
+  const resourceCount = record.onlineResources?.length ?? 0;
+  if (resourceCount > 0) {
+    lines.push(`- Ressources: ${resourceCount} lien(s)`);
   }
 
   return lines.join("\n");

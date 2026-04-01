@@ -12,9 +12,11 @@ npm start        # node dist/index.js (requires GEONETWORK_URL)
 
 ## Architecture
 
-- `src/types/` — TypeScript type definitions (Record, Resource, SearchResult, etc.)
-- `src/api/` — GeoNetwork 4.x API client (ElasticSearch search, records API)
+- `lib/metadata-converter/` — @geonetwork-ui/metadata-converter lib (CatalogRecord model, GN4 converter, link utilities)
+- `src/api/` — GeoNetworkClient wrapping the lib's searchRecords/getRecord
 - `src/tools/` — 3 MCP tools (search_records, get_record, get_record_resources)
+
+All GN4 ElasticSearch responses are converted to `CatalogRecord` (DatasetRecord | ServiceRecord | ReuseRecord) via the metadata-converter lib. Link classification uses `getUsagesForLink()` and `getLinkLabel()` from the lib.
 
 ## MCP Client Configuration
 

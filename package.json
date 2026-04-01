@@ -15,6 +15,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@geonetwork-ui/metadata-converter": "file:./lib/metadata-converter",
     "@modelcontextprotocol/sdk": "^1.12.1",
     "zod": "^3.24.4"
   },
